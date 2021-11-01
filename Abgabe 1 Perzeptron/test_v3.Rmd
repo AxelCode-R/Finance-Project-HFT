@@ -353,7 +353,6 @@ def test(wgts, test_data_set):
     return(df)
         
         
-        
 # INPUTS
 alpha = 1
 iterations = 30
