@@ -48,7 +48,7 @@ for i in range(n_iterations):
   for k in range(len(X)):
     # Forward
     IN_01 = X[k]
-    OUT_01 = sigmoid(np.dot(W_01, IN_01))
+    OUT_01 = sigmoid(np.dot(W_01, IN_01))   
     IN_12 = OUT_01
     OUT_12 = sigmoid(np.dot(W_12, IN_12))
     error =  Y[k] - OUT_12 
@@ -61,6 +61,7 @@ for i in range(n_iterations):
     W_12 = W_12 + eta * np.outer(grad_12.T, IN_12)
   
 
+  
 end = time.time()
 print(end - start)
 
@@ -110,7 +111,7 @@ def sigmoid(s):
 
 
 
-for i in range(n_iterations*4):
+for i in range(n_iterations):
   IN_01 = X.T
   OUT_01 = sigmoid((W_01 @ IN_01))
   IN_12 = OUT_01
@@ -119,7 +120,7 @@ for i in range(n_iterations*4):
   print(np.sum(0.5 * (error) ** 2))
   # Backward
   grad_12 = OUT_12 * (1-OUT_12) * error
-  grad_01 = OUT_01 * (1-OUT_01) * (grad_12.T @ W_12).T
+  grad_01 = OUT_01 * (1-OUT_01) * (W_12.T @ grad_12)
   
   W_01 = W_01 + eta * (grad_01 @ IN_01.T)
   W_12 = W_12 + eta * (grad_12 @ IN_12.T)
