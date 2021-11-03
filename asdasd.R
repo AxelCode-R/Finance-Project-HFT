@@ -20,3 +20,5 @@ install.packages("rmdformats")
 
 library(reticulate)
 Sys.setenv(RETICULATE_PYTHON = "D:\\WinPython2\\WPy64-3950\\python-3.9.5.amd64\\")
+
+
