@@ -21,7 +21,7 @@ target = np.array(
      [1],
      [0]])
 
-lr = 0.2
+lr = 0.03
 num_epochs = 10000
 num_input = 2
 num_hidden = 2
@@ -136,3 +136,7 @@ def plot_error():
 
 train()
 plot_error()
+
+
+
+

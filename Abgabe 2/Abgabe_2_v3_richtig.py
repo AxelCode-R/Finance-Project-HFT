@@ -11,8 +11,8 @@ np.set_printoptions(suppress=True)
 
 losses = []
 
-eta=0.03
-n_iterations=40000 
+eta = 0.03
+n_iterations = 40000 
 
 X = np.array([
   [1.0,1.0,1.0],
