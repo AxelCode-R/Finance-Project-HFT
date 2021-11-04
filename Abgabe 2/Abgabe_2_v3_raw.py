@@ -58,7 +58,7 @@ for i in range(n_iterations):
 
 
 
-print("Trainintes KNN hat einen Gesamtfehler von: \n", np.sum(0.5 * (Y.T - sigmoid((W_12 @ sigmoid((W_01 @ X.T))))) ** 2))
+print("Trainiertes KNN hat einen Gesamtfehler von: \n", np.sum(0.5 * (Y.T - sigmoid((W_12 @ sigmoid((W_01 @ X.T))))) ** 2))
 
 
 # Plot losses
