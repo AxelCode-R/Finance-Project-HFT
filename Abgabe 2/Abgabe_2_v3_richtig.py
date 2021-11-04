@@ -21,12 +21,16 @@ def sigmoid(s):
   return 1.0 / (1.0 + np.exp(-s))
 
 
-def forward(network):
+def forward(network, print_details = False):
   network["IN_01"] = network["X"].T
   network["OUT_01"] = sigmoid((network["W_01"] @ network["IN_01"]))
   network["IN_12"] = network["OUT_01"]
   network["OUT_12"] = sigmoid((network["W_12"] @ network["IN_12"]))
   network["error"] =  network["Y"].T - network["OUT_12"]
+  
+  if print_details:
+    for i in range(len(network["X"])):
+      print(network["X"][i],  network["Y"][i][1], " -> ", network["OUT_12"].T[i][1])
   return(network)
 
 
@@ -39,18 +43,18 @@ def backward(network, eta):
   return(network)
 
 
-def fit_all(X, Y, W_01, W_12, eta = 0.03, n_iterations = 5000, print_network = False, print_error=False):
+def fit_all(X, Y, W_01, W_12, eta = 0.03, n_iterations = 5000, print_network = False, print_error=False, print_details=False):
   # Init Values
   start_timer = time.time()
   losses = []
-  network = {"X":[] ,"IN_01":[], "W_01":[], "OUT_01":[], "IN_12":[], "W_12":[], "Y":[], "error":[], "loss":[], "grad_01":[], "grad_12":[], "new_W_01":[], "new_W_12":[]}
+  network = {"X":[] ,"IN_01":[], "W_01":[], "OUT_01":[], "IN_12":[], "W_12":[], "OUT_12":[], "Y":[], "error":[], "loss":[], "grad_01":[], "grad_12":[], "new_W_01":[], "new_W_12":[]}
   network.update({
   "new_W_01":W_01, 
   "new_W_12":W_12})
   
   for i in range(n_iterations):
     network.update({"X":X, "Y":Y, "W_01":network["new_W_01"], "W_12":network["new_W_12"]})
-    network = forward(network)
+    network = forward(network, print_details=print_details)
      
     losses.append(np.sum(0.5 * (network["error"]) ** 2))
     if print_error:
@@ -65,11 +69,11 @@ def fit_all(X, Y, W_01, W_12, eta = 0.03, n_iterations = 5000, print_network = F
   return network, losses, time_used
 
 
-def fit_one(X, Y, W_01, W_12, eta = 0.03, n_iterations = 5000, print_network = False, print_error=False):
+def fit_one(X, Y, W_01, W_12, eta = 0.03, n_iterations = 5000, print_network = False, print_error=False, print_details=False):
   # Init Values
   start_timer = time.time()
   losses = []
-  network = {"X":[] ,"IN_01":[], "W_01":[], "OUT_01":[], "IN_12":[], "W_12":[], "Y":[], "error":[], "loss":[], "grad_01":[], "grad_12":[], "new_W_01":[], "new_W_12":[]}
+  network = {"X":[] ,"IN_01":[], "W_01":[], "OUT_01":[], "IN_12":[], "W_12":[], "OUT_12":[], "Y":[], "error":[], "loss":[], "grad_01":[], "grad_12":[], "new_W_01":[], "new_W_12":[]}
   network.update({
   "new_W_01":W_01, 
   "new_W_12":W_12})
@@ -79,7 +83,7 @@ def fit_one(X, Y, W_01, W_12, eta = 0.03, n_iterations = 5000, print_network = F
     for k in range(len(X)):
       
       network.update({"X":X[[k]], "Y":Y[[k]], "W_01":network["new_W_01"], "W_12":network["new_W_12"]})
-      network = forward(network)
+      network = forward(network, print_details=print_details)
      
       temp_errors.append( 0.5 * (network["error"]) ** 2 )
       
@@ -122,16 +126,20 @@ W_12 = np.array([
 ############################################################################
 # CALL KNN_all (iterate over all rows in trainingdata at the same time)
 network_all, losses_all, time_all = fit_all(
-  X = X, Y = Y, W_01 = W_01, W_12 = W_12, eta = 0.03, n_iterations = 40000, print_network = False, print_error=False)    
+  X = X, Y = Y, W_01 = W_01, W_12 = W_12, eta = 0.03, n_iterations = 40000, print_network = False, print_error=False, print_details=False)    
   
+print("All that network_all info....:\n")
+print_dict(network_all)
 print("Time network_all: ", time_all)
 print("Error network_all: ", losses_all[-1])
 
 ############################################################################
 # CALL KNN_one (iterate over each row in trainingdata
 network_one, losses_one, time_one = fit_one(
-  X = X, Y = Y, W_01 = W_01, W_12 = W_12, eta = 0.03, n_iterations = 40000, print_network = False, print_error=False)   
+  X = X, Y = Y, W_01 = W_01, W_12 = W_12, eta = 0.03, n_iterations = 40000, print_network = False, print_error=False, print_details=False)   
 
+print("All that network_one info....:\n")
+print_dict(network_one)
 print("Time network_one: ", time_one)
 print("Error network_one: ", losses_one[-1])
 
