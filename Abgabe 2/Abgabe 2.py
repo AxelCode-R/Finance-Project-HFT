@@ -10,7 +10,7 @@ np.set_printoptions(suppress=True)
 n_input_neurons = 2
 n_hidden_neurons = 2
 n_output_neurons = 1
-
+ 
 W_IH = np.array([[0.0,0.0,0.0],[-10.0,20.0,20.0],[30.0,-20.0,-20.0]])
 W_HO = np.array([[0.0,0.0,0.0],[-30.0,20.0,20.0]])
 
@@ -25,6 +25,9 @@ def predict(data, W_IH, W_HO):
   network = pd.DataFrame(columns=["I", "W_IH", "H", "W_HO", "O", "y"])
   
   for i in range(len(data)):
+    # O1 = sig(W1 * I1)
+    # I2 = O1
+    # O2 = sig(W2 * I2)
     I = data[i]
     net = np.dot( W_IH, I )
     a = sigmoid(net)

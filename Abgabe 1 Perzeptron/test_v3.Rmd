@@ -32,6 +32,7 @@ library(reticulate)
 # library(knitr)
 # opts_chunk$set(tidy.opts=list(width.cutoff=20),tidy=TRUE)
 ```
+
 ```{css, echo=FALSE}
 .Wrap {
   max-width: 1120px;
