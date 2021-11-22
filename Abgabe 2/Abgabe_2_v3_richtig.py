@@ -9,6 +9,9 @@ np.set_printoptions(suppress=True)
 import time
 
 
+
+
+
 ############################################################################
 # HELP Functions:
 def print_dict(dict):
@@ -25,6 +28,7 @@ def forward(network, print_details = False):
   network["IN_01"] = network["X"].T
   network["OUT_01"] = sigmoid((network["W_01"] @ network["IN_01"]))
   network["IN_12"] = network["OUT_01"]
+  network["IN_12"][0] = np.ones(len(network["IN_12"][0]))
   network["OUT_12"] = sigmoid((network["W_12"] @ network["IN_12"]))
   network["error"] =  network["Y"].T - network["OUT_12"]
   
@@ -118,11 +122,13 @@ W_01 = np.array([
   [-0.251, 0.901, 0.464], 
   [0.197, -0.688, -0.688], 
   [-0.884, 0.732, 0.202]])
+
 W_12 = np.array([
   [0.416, -0.959, 0.940], 
   [0.665, -0.575, -0.636]])
   
-  
+# W_01 = np.random.random((3,3))
+# W_12 = np.random.random((2,3)) 
 ############################################################################
 # CALL KNN_all (iterate over all rows in trainingdata at the same time)
 network_all, losses_all, time_all = fit_all(

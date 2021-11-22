@@ -10,12 +10,12 @@ import time
 
 
 
-
+# So will der reitz es
 start = time.time()
 
 
 eta=0.03
-n_iterations=40000 
+n_iterations=20000 
 
 X = np.array([
   [1.0,1.0,1.0],
@@ -77,7 +77,7 @@ np.sum(0.5 * (Y.T -sigmoid((W_12 @ sigmoid((W_01 @ X.T))))) ** 2)
 
 
 
-
+# ich will das aber mit full batch machen (ergebnis ist mehr oder weniger gleich)
 start = time.time()
 
 

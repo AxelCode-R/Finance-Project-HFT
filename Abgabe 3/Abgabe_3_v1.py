@@ -108,7 +108,7 @@ Y_test = np.append(np.ones((data.shape[0]-training_n,1)), data.loc[training_n:, 
 # CALL KNN_all (iterate over all rows in trainingdata at the same time)
 network_all, losses_all, time_all = fit_all(
   X = X_train, Y = Y_train, 
-  hidden_neurons = 12, 
+  hidden_neurons = 11, 
   eta = 0.01, n_iterations = 20000, print_network = False, print_error=False, print_details=False)    
   
 print("All that network_all info....:\n")
