@@ -1,0 +1,300 @@
+---
+title: "3. Finance Projekt WS21/22"
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
+    self_contained: true
+#output: rmdformats::downcute
+#output: rmdformats::robobook
+#output: rmdformats::material
+#output: rmdformats::readthedown
+#https://www.rdocumentation.org/packages/rmarkdown/versions/2.11/topics/html_document
+# output:
+#   rmdformats::downcute:
+#     code_folding: show
+#     code_download: true
+#     self_contained: true
+#     thumbnails: false
+#     lightbox: true
+#output: pdf_document
+editor_options: 
+  chunk_output_type: console
+header-includes:
+  \usepackage{fvextra}
+  \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, results="hold")
+library(reticulate)
+Sys.setenv(RETICULATE_PYTHON = "D:\\WinPython2\\WPy64-3950\\python-3.9.5.amd64\\")
+```
+```{css, echo=FALSE}
+.Wrap {
+  max-width: 1120px;
+}
+.main-content {
+  max-width: 1120px;
+}
+
+.pull-right {
+    position: relative !important;
+    width: 0 !important;
+    padding: 0px !important;
+    margin: 0px !important;
+    left: 5px !important;
+}
+.collapse.in {
+  top: -20px !important;
+  position: relative !important;
+}
+.row {
+height: 0px !important;
+}
+```
+<!-- $$\text{Abgabe Nr.2}$$ -->
+
+
+**Version:** V1.1  
+**Status:** draft  
+**Last change:** 22.11.2021  
+**Author:** Axel Roth, Aysegül Dursun  
+
+
+# Aufgabe
+Aus der letzten Abgabe kennen wir den Vorwärtsflow eines mehrschichtigen neuronalen Netzes. Hier nochmal ein Recap: Durch bilden der gewichteten Summe und auswerten der Aktivierungsfunktion schreitet man von Layer zu Layer, bis der Output-Layer erreicht ist. Was jetzt allerdings neu hinzugekommen ist, ist der Rückwärtsflow. Hierzu bilden wir die partiellen Ableitungen der Fehlerfunktion, um die Sensitivität des Fehlers, bezüglich der Gewichte zu erhalten.  
+
+### Theorie
+Die Fehlerfunktion ist der Mean-Square-Error
+
+$$E_{j}=\frac{1}{2}* \sum_\limits{\substack{l=1}}^k (y_{_l,_j}-\hat y_{_l,_j})^2$$
+und die partiellen Ableitungen bezüglich den Gewichten sind
+
+$$\frac{\partial E_j}{\partial w_q{_p}}=\frac{\partial E_j}{\partial o_{_q}}*\frac{\partial o_q}{\partial net_q}*   \frac{\partial net_q}{\partial w_q{_p}}$$
+Insgesamt erhalten wir für den vorletzten Layer, mit der sigmoid als Aktivierungsfunktion, folgendes Ergebnis:
+$$\frac{\partial E_j}{\partial w_q{_p}}=-(y_{_q,_j}-\hat y_{_q,_j})*o_q*(1-o_q)*o_p$$
+Damit ergeben sich die neuen Gewichte für den Backwardflow wie folgt:
+
+$${w_q{_p}^{neu}}=w_q{_p}^{alt}+{\Delta w_q{_p}}$$
+mit
+$${\Delta w_q{_p}}= \eta*\delta_q*o_p$$
+Layer übergreifend werden die partiellen Ableitungen mit folgender Formel berechnet:
+
+$${\Delta w_q{_p}}= \begin{cases}
+    o_q*(1-o_q)*(y_{_q,_j}-\hat y_{_q,_j}),& \textrm{falls Neuron q im Output Layer}\\
+    o_q*(1-o_q)*\sum_\limits{\substack{l=1}}\Delta_l*w_l{_q},& \textrm{sonst}.
+\end{cases}$$
+Hierbei wird bei einem Zwischenlayer, die vorher berechnete Senitivität, gewichtet Rückwärts weitergegeben.
+
+Die beiden Flows: forward and backward, packen wir in eine for schleife mit 40000 Epochen und trainieren somit unser KNN.
+
+<!-- Wenn das Programm durchgelaufen ist, kann man sehr gut erkennen, dass das Perceptron gegen die XOR-Gate konvergiert. Je höher die Anzahl der Epochen gewählt wird, desto bessere Genauigkeit kann erzielt werden. -->
+
+### Code Initalisierung
+Zuerst werden die verwendeten Packages und Einstellungen geladen:
+```{python}
+import numpy as np
+import random as ra
+import pandas as pd
+import matplotlib.pyplot as pyplot
+pd.set_option('display.max_rows', 500)
+pd.set_option('display.max_columns', 500)
+pd.set_option('display.width', 1000)
+np.set_printoptions(suppress=True)
+import time
+```
+Innerhalb der erstellten Funktionen wird an Übergabeparametern gespart, da die komplette Information, pro Iteration, in einem pandas Dataframe names `network` gespeichert wird, wodurch jede Funktion jederzeit auf alle momentan relvanten Daten zugreifen kann.  
+  
+Anschließend laden wir die Funktionen, die in der letzten Abgabe bereits erwähnt wurden, ein paar Hilfsfunktionen, die nichts mit der KNN zutun haben und die benötigten Parameter inklsuive XOR-Gate Datensatz:
+```{python}
+############################################################################
+# HELP Functions:
+def print_dict(dict):
+  for key, value in dict.items():
+    print(key, ' : \n', value)
+
+############################################################################
+# KNN Functions:
+def sigmoid(s):
+  return 1.0 / (1.0 + np.exp(-s))
+
+
+def forward(network, print_details = False):
+  network["IN_01"] = network["X"].T
+  network["OUT_01"] = sigmoid((network["W_01"] @ network["IN_01"]))
+  network["IN_12"] = network["OUT_01"]
+  network["IN_12"][0] = np.ones(len(network["IN_12"][0]))
+  network["OUT_12"] = sigmoid((network["W_12"] @ network["IN_12"]))
+  network["error"] =  network["Y"].T - network["OUT_12"]
+  
+  if print_details:
+    for i in range(len(network["X"])):
+      print(network["X"][i],  network["Y"][i][1], " -> ", network["OUT_12"].T[i][1])
+  return(network)
+
+############################################################################
+# KNN DATA:
+X = np.array([
+  [1.0,1.0,1.0],
+  [1.0,0.0,1.0],
+  [1.0,1.0,0.0],
+  [1.0,0.0,0.0]]) 
+
+Y = np.array([
+  [1.0,0.0], 
+  [1.0,1.0], 
+  [1.0,1.0], 
+  [1.0,0.0]]) 
+
+W_01 = np.array([
+  [-0.251, 0.901, 0.464], 
+  [0.197, -0.688, -0.688], 
+  [-0.884, 0.732, 0.202]])
+
+W_12 = np.array([
+  [0.416, -0.959, 0.940], 
+  [0.665, -0.575, -0.636]])
+```
+
+Der oben erklärte Backwardflow kann in Python folgendermaßen umgesetzt werden: 
+```{python}
+def backward(network, eta):
+  network["grad_12"] = network["OUT_12"] * (1-network["OUT_12"]) * network["error"]
+  network["grad_01"] = network["OUT_01"] * (1-network["OUT_01"]) * (network["W_12"].T @ network["grad_12"])
+  
+  network["new_W_01"] = network["W_01"] + eta * (network["grad_01"] @ network["IN_01"].T)
+  network["new_W_12"] = network["W_12"] + eta * (network["grad_12"] @ network["IN_12"].T)
+  return(network)
+```
+
+Nun verknüpfen wir den Forward- und Backwardflow innerhalt einer einziegen Funktion, in der mehrmals über jedes Scenario Iteriert wird.
+```{python}
+def fit_one(X, Y, W_01, W_12, eta = 0.03, n_iterations = 5000, print_network = False, print_error=False, print_details_last=False):
+  # Init Values
+  start_timer = time.time()
+  losses = []
+  network = {"X":[] ,"IN_01":[], "W_01":[], "OUT_01":[], "IN_12":[], "W_12":[], "OUT_12":[], "Y":[], "error":[], "loss":[], "grad_01":[], "grad_12":[], "new_W_01":[], "new_W_12":[]}
+  network.update({
+  "new_W_01":W_01, 
+  "new_W_12":W_12})
+  
+  for i in range(n_iterations):
+    temp_errors = []
+    if(i==(n_iterations)-1 and print_details_last):
+      print("Last Epoch:")
+    for k in range(len(X)):
+      
+      network.update({"X":X[[k]], "Y":Y[[k]], "W_01":network["new_W_01"], "W_12":network["new_W_12"]})
+      if(i==(n_iterations)-1 and print_details_last):
+        network = forward(network, print_details=True)
+      else:
+        network = forward(network, print_details=False)
+     
+      temp_errors.append( 0.5 * (network["error"]) ** 2 )
+      
+      network = backward(network, eta)
+      
+      if print_network:
+        print_dict(network)
+        
+    losses.append(np.sum(temp_errors))
+    if print_error:
+      print(losses[-1])
+    
+  time_used = time.time() - start_timer
+  return network, losses, time_used
+
+```
+
+### Code Ausführung
+Jetzt wird es Zeit das KNN zu trainieren, mit Lernrate 0.03 und 40000 Epochen:
+```{python}
+############################################################################
+# CALL KNN_one (iterate over each row in trainingdata
+network_one, losses_one, time_one = fit_one(
+  X = X, Y = Y, W_01 = W_01, W_12 = W_12, eta = 0.03, n_iterations = 40000, print_network = False, print_error=False, print_details_last=True)   
+print("")
+print("All that network_one info....:")
+print_dict(network_one)
+print("")
+print("Time network_one: ", time_one)
+print("")
+print("Error network_one: ", losses_one[-1])
+```
+
+Zur besseren visualisierung wird der Mean-Square-Error in einem Chart dargestellt:
+```{python}
+def plot_error(errors, title):
+  x = list(range(len(errors)))
+  y = np.array(errors)
+  pyplot.figure(figsize=(6,6))
+  pyplot.plot(x, y, "g", linewidth=1)
+  pyplot.xlabel("Iterations", fontsize = 16)
+  pyplot.ylabel("Mean Square Error (all)", fontsize = 16)
+  pyplot.title(title)
+  pyplot.ylim(0,1)
+  pyplot.show()
+
+
+plot_error(losses_one, "fit_one\nlast error: "+str(round(losses_one[-1],6))+"\ntime: "+str(round(time_one,2)))
+```
+
+### Batch Vergleich
+Bisher wurde das KNN immer mit einem einziegen Scenario pro Iteration trainiert, was nicht parralelisierbar ist und am längsten Dauert. Die Lösung dafür, kann durch Betrachtung mehrere Scenarien pro Iteration erzielt werden. Um es einfach zu halten werden wir nun die gleiche KNN mit einem full-batch trainieren, um die maximale Geschwindigkeit herauszuholen.  
+
+```{python}
+def fit_all(X, Y, W_01, W_12, eta = 0.03, n_iterations = 5000, print_network = False, print_error=False, print_details_last=False):
+  # Init Values
+  start_timer = time.time()
+  losses = []
+  network = {"X":[] ,"IN_01":[], "W_01":[], "OUT_01":[], "IN_12":[], "W_12":[], "OUT_12":[], "Y":[], "error":[], "loss":[], "grad_01":[], "grad_12":[], "new_W_01":[], "new_W_12":[]}
+  network.update({
+  "new_W_01":W_01, 
+  "new_W_12":W_12})
+  
+  for i in range(n_iterations):
+    network.update({"X":X, "Y":Y, "W_01":network["new_W_01"], "W_12":network["new_W_12"]})
+    if(i==(n_iterations)-1 and print_details_last):
+      print("Last Epoch:")
+      network = forward(network, print_details=True)
+    else:
+      network = forward(network, print_details=False)
+     
+    losses.append(np.sum(0.5 * (network["error"]) ** 2))
+    if print_error:
+      print(losses[-1])
+     
+    network = backward(network, eta)
+     
+    if print_network:
+      print_dict(network)
+    
+  time_used = time.time() - start_timer
+  return network, losses, time_used
+
+
+
+
+
+############################################################################
+# CALL KNN_all (iterate over all rows in trainingdata at the same time)
+network_all, losses_all, time_all = fit_all(
+  X = X, Y = Y, W_01 = W_01, W_12 = W_12, eta = 0.03, n_iterations = 40000, print_network = False, print_error=False, print_details_last=True)    
+print("")
+print("All that network_all info:")
+print_dict(network_all)
+print("")
+print("Time network_all: ", time_all)
+print("")
+print("Error network_all: ", losses_all[-1])
+
+
+
+
+############################################################################
+# CHARTS
+plot_error(losses_all, "fit_all\nlast error: "+str(round(losses_all[-1],6))+"\ntime: "+str(round(time_all,2)))
+```
+
+Wie man sehen kann, ist die full-batch Variante deutlich schneller und genauso genau. Nachteil dabei ist, das die full-batch Variante eher dazu neigt sich in sogenannte sharp-minimaz festzusetzen und das große Trainingsdaten auch mehr RAM verbrauchen. In der Praxis wird deshalb immer eine optimale Mitte zwischen full- und single-batch gefunden, um zwischen Geschwindigkeit und Genauigkeit abzuwägen.
