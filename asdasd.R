@@ -13,7 +13,7 @@ install.packages("rmdformats")
 # how to code fold https://stackoverflow.com/questions/14127321/how-to-hide-code-in-rmarkdown-with-option-to-see-it
 
 
-
+getwd()
 
 
 .libPaths(new="D:/R-Portable/App/R-Portable/library")

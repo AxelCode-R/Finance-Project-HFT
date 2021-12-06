@@ -91,7 +91,7 @@ class MLP:
         grad01 = self.train_data.T @ (((error_term * self._delsigmoid(self.output_final)) * self.weights_12.T) * self._delsigmoid(self.hidden_out))
         print("grad01: ", grad01)
         print(grad01.shape)
-
+ 
         # the gradient for the output layer weights
         grad12 = self.hidden_out.T @ (error_term * self._delsigmoid(self.output_final))
 
