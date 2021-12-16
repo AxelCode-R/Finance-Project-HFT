@@ -60,6 +60,12 @@ X_test = data.loc[training_n:, data.columns != 'Risk'].to_numpy(dtype=np.float64
 Y_test = data.loc[training_n:, data.columns == 'Risk'].to_numpy(dtype=np.float64)
 
 
+# X_train = NormalizeData(data.loc[0:(training_n-1), data.columns != 'Risk']).to_numpy(dtype=np.float64)
+# Y_train = data.loc[0:(training_n-1), data.columns == 'Risk'].to_numpy(dtype=np.float64)
+# 
+# X_test = NormalizeData(data.loc[training_n:, data.columns != 'Risk']).to_numpy(dtype=np.float64)
+# Y_test = data.loc[training_n:, data.columns == 'Risk'].to_numpy(dtype=np.float64)
+
 # analyze
 # data.loc[0:(training_n-1)].hist(bins=10,figsize=(8,8), range=(0,1))
 # pyplot.tight_layout()
@@ -285,8 +291,8 @@ def train_analyse(X, Y, hidden_layer_neurons, alpha, epochs, alpha_decrese_to = 
 
 
 #W_train, ms_errors_train, ms_errors_test = train_analyse(X = X_train, Y = Y_train, hidden_layer_neurons = [9,6], alpha = 0.1,  epochs = 10000, alpha_decrese_to = 0.0001, default_W = None, batch_size = 50, random_batch_order = True, X_test=X_test, Y_test=Y_test)# gut
-W_train, ms_errors_train, ms_errors_test = train_analyse(X = X_train, Y = Y_train, hidden_layer_neurons = [9,6], alpha = 0.1,  epochs = 20000, alpha_decrese_to = 0.0001, default_W = None, batch_size = 50, random_batch_order = True, X_test=X_test, Y_test=Y_test) #4% 30%
-#W_train, ms_errors_train, ms_errors_test = train_analyse(X = X_train, Y = Y_train, hidden_layer_neurons = [2], alpha = 0.01,  epochs = 2000, alpha_decrese_to = 0.01, default_W = 0.5, batch_size = 1, random_batch_order = False, X_test=X_test, Y_test=Y_test)
+#W_train, ms_errors_train, ms_errors_test = train_analyse(X = X_train, Y = Y_train, hidden_layer_neurons = [9,6], alpha = 0.1,  epochs = 10000, alpha_decrese_to = 0.0001, default_W = 0.5, batch_size = 50, random_batch_order = True, X_test=X_test, Y_test=Y_test) #4% 30%
+W_train, ms_errors_train, ms_errors_test = train_analyse(X = X_train, Y = Y_train, hidden_layer_neurons = [2], alpha = 0.01,  epochs = 2000, alpha_decrese_to = 0.01, default_W = 0.5, batch_size = 50, random_batch_order = False, X_test=X_test, Y_test=Y_test)
 #W_train, ms_errors_train, ms_errors_test = train_analyse(X = X_train, Y = Y_train, hidden_layer_neurons = [9,6], alpha = 0.1,  epochs = 2000, alpha_decrese_to = 0.01, default_W = None, batch_size = 50, random_batch_order = True, X_test=X_test, Y_test=Y_test)
 
 #W_train, ms_errors_train, ms_errors_test = train_analyse(X = X_train, Y = Y_train, hidden_layer_neurons = [9,6], alpha = 0.1,  epochs = 2000, alpha_decrese_to = 0.01, default_W = None, batch_size = 50, random_batch_order = True, X_test=X_test, Y_test=Y_test)
@@ -353,34 +359,32 @@ confusion_matrix(Y_test, classify(result_test))
 
 
 
-
-
 #45 161
 # Optimize Hyper-Parameters
-import itertools
-valid_hyper = [[3,4,5,6,7,8,9],[1,2,3,4,5,6],[1,0.5,0.1],[1,5,10,50,100,200]]
-combo_hyper = list(itertools.product(*valid_hyper))
-
-res = pd.DataFrame(columns=['i','classified_error_train', 'classified_wgt_wrong_train', 'classified_error_test', 'classified_wgt_wrong_test']) #(8, 5)
-for i in range(len(combo_hyper)):
-  print(i)
-  np.random.seed(0)
-  W_train, errors_train = train(X = X_train, Y = Y_train, hidden_layer_neurons = list(combo_hyper[i][0:2]), alpha = combo_hyper[i][2],  epochs = 2000, alpha_decrese_to = 0.01, default_W = None, batch_size = combo_hyper[i][3], random_batch_order = True)
-  temp_train = Y_train - classify(test(X = X_train, W = W_train))
-  classified_error_train = mean_square_error(temp_train)
-  classified_wgt_wrong_train = np.round(np.sum(np.abs(temp_train)) / len(temp_train),6)
-  temp_test = Y_test - classify(test(X = X_test, W = W_train))
-  classified_error_test = mean_square_error(temp_test)
-  classified_wgt_wrong_test = np.round(np.sum(np.abs(temp_test)) / len(temp_test),6)
-  res.append({'i':i,'classified_error_train':classified_error_train, 'classified_wgt_wrong_train':classified_wgt_wrong_train, 'classified_error_test':classified_error_test, 'classified_wgt_wrong_test':classified_wgt_wrong_test}, ignore_index=True)
-
-
-
+# import itertools
+# valid_hyper = [[3,4,5,6,7,8,9],[1,2,3,4,5,6],[1,0.5,0.1],[1,5,10,50,100,200]]
+# combo_hyper = list(itertools.product(*valid_hyper))
+# 
+# res = pd.DataFrame(columns=['i','classified_error_train', 'classified_wgt_wrong_train', 'classified_error_test', 'classified_wgt_wrong_test']) #(8, 5)
+# for i in range(len(combo_hyper)):
+#   print(i)
+#   np.random.seed(0)
+#   W_train, errors_train = train(X = X_train, Y = Y_train, hidden_layer_neurons = list(combo_hyper[i][0:2]), alpha = combo_hyper[i][2],  epochs = 2000, alpha_decrese_to = 0.01, default_W = None, batch_size = combo_hyper[i][3], random_batch_order = True)
+#   temp_train = Y_train - classify(test(X = X_train, W = W_train))
+#   classified_error_train = mean_square_error(temp_train)
+#   classified_wgt_wrong_train = np.round(np.sum(np.abs(temp_train)) / len(temp_train),6)
+#   temp_test = Y_test - classify(test(X = X_test, W = W_train))
+#   classified_error_test = mean_square_error(temp_test)
+#   classified_wgt_wrong_test = np.round(np.sum(np.abs(temp_test)) / len(temp_test),6)
+#   res.append({'i':i,'classified_error_train':classified_error_train, 'classified_wgt_wrong_train':classified_wgt_wrong_train, 'classified_error_test':classified_error_test, 'classified_wgt_wrong_test':classified_wgt_wrong_test}, ignore_index=True)
+# 
 
 
 
 
 
+
+# test ob 0.5 gewichte sinn machen
 import numpy as np
 
 def nonlin(x,deriv=False):
