@@ -6,12 +6,14 @@ import matplotlib.pyplot as pyplot
 import math as ma
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
-pd.set_option('display.width', 1000)
+pd.set_option('display.width', 2000)
 np.set_printoptions(suppress=True)
 
 
 data_train = pd.read_excel("Abgabe 4/lendingclub_traindata.xlsx").fillna(0)
-
+# data_train.hist(bins=10,figsize=(8,8), range=(0,1))
+# pyplot.tight_layout()
+# pyplot.show()
 
 
 def calc_entropy(df, decision_on = "loan_status"):
@@ -93,6 +95,7 @@ def make_node_and_leafs(df, decision_on = "loan_status", search_minima_intervall
   
   
   
+#data_train["loan_status"] = (data_train["loan_status"]-1) * -1
 
 leafs = make_node_and_leafs(df=data_train, decision_on = "loan_status", search_minima_intervalls = 1000, min_size = 1000, max_depth = 3)
 leafs["entropy"] = (leafs["entropy"]*leafs["rows"])/len(data_train)
