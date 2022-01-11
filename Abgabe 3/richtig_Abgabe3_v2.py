@@ -11,7 +11,7 @@ pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
 np.set_printoptions(suppress=True)
 import math as ma
-
+import time
 
 # Load Data
 data = pd.read_csv("Abgabe 3/Kreditausfalldaten.csv").fillna(0)
@@ -177,8 +177,16 @@ def train(X, Y, hidden_layer_neurons, alpha, epochs, alpha_decrese_to = None, de
 #W_train, errors_train = train(X = X_train, Y = Y_train, hidden_layer_neurons = [9,9,6], alpha = 0.1,  epochs = 30000, alpha_decrese_to = 0.01, default_W = None, batch_size = 100, random_batch_order = True) # 1.5 36
 
 #gut
-W_train, ms_errors_train = train(X = X_train, Y = Y_train, hidden_layer_neurons = [9,6], alpha = 0.1,  epochs = 10000, alpha_decrese_to = 0.01, default_W = None, batch_size = 50, random_batch_order = True)
+start_timer = time.time()
+W_train, ms_errors_train = train(X = X_train, Y = Y_train, hidden_layer_neurons = [9,6], alpha = 0.1,  epochs = 1000, alpha_decrese_to = 0.01, default_W = None, batch_size = 50, random_batch_order = True)
+time_used = time.time() - start_timer
+print(time_used)
 
+
+start_timer = time.time()
+W_train, ms_errors_train = train(X = X_train, Y = Y_train, hidden_layer_neurons = [9,6], alpha = 0.1,  epochs = 1000, alpha_decrese_to = 0.01, default_W = None, batch_size = 1, random_batch_order = True)
+time_used = time.time() - start_timer
+print(time_used)
 #W_train, errors_train = train(X = X_train, Y = Y_train, hidden_layer_neurons = [9,6], alpha = 0.01,  epochs = 2000, alpha_decrese_to = 0.01, default_W = None, batch_size = 10, random_batch_order = False)
 #W_train, errors_train = train(X = X_train, Y = Y_train, hidden_layer_neurons = [9,6], alpha = 0.1,  epochs = 2000, alpha_decrese_to = 0.01, default_W = None, batch_size = 50, random_batch_order = False) # good
 #W_train, errors_train = train(X = X_train, Y = Y_train, hidden_layer_neurons = [9,6], alpha = 0.01,  epochs = 15000, alpha_decrese_to = 0.01, default_W = None, batch_size = 50, random_batch_order = False)

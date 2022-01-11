@@ -11,9 +11,13 @@ np.set_printoptions(suppress=True)
 
 
 data_train = pd.read_excel("Abgabe 4/lendingclub_traindata.xlsx").fillna(0)
+data_test = pd.read_excel("Abgabe 4/lendingclub_testdata.xlsx").fillna(0)
 # data_train.hist(bins=10,figsize=(8,8), range=(0,1))
 # pyplot.tight_layout()
 # pyplot.show()
+
+data_train["loan_status"] = -(data_train["loan_status"]-1) 
+data_test["loan_status"] = -(data_test["loan_status"]-1)
 
 
 def calc_entropy(df, decision_on = "loan_status"):
@@ -92,9 +96,9 @@ def make_node_and_leafs(df, decision_on = "loan_status", search_minima_intervall
     leafs = make_node_and_leafs( df.loc[df[col] > val, df.columns != col], decision_on, search_minima_intervalls, path+"-R", condition+col+" > "+str(float(round(val,5)))+" and ", min_size, max_depth, leafs)
     leafs = make_node_and_leafs( df.loc[df[col] <= val, df.columns != col], decision_on, search_minima_intervalls, path + "-L", condition+col+" <= "+str(float(round(val,5)))+" and ", min_size, max_depth, leafs)
   return(leafs)
-  
-  
-  
+
+
+
 #data_train["loan_status"] = (data_train["loan_status"]-1) * -1
 
 leafs = make_node_and_leafs(df=data_train, decision_on = "loan_status", search_minima_intervalls = 1000, min_size = 1000, max_depth = 3)
@@ -103,7 +107,7 @@ leafs["entropy"] = (leafs["entropy"]*leafs["rows"])/len(data_train)
 print("Entropy in data: ", calc_entropy(data_train))
 print("Entropy in all leafs: ", np.sum(leafs["entropy"]))
 
-  
+
 
 data_temp = data_train.copy()
 data_temp["ID"] = list(range(len(data_temp)))
@@ -116,3 +120,30 @@ Y = data_train.loc[:, data_train.columns == 'loan_status'].to_numpy()[:,0]
 
 print("Wrong answers of the decission tree: ",np.sum(np.abs(Y-X))/len(Y) * 100, "%")
 confusion_matrix(Y,X)
+
+
+#View(py$leafs)
+
+
+
+
+
+# Analyse Test Data
+data_temp = data_test.copy()
+data_temp["ID"] = list(range(len(data_temp)))
+conditions = "("+ ") | (".join(list(leafs.loc[leafs["P_of_no_default"] < 0.75, leafs.columns == "condition"]["condition"].replace("and","&")))+")"
+data_temp = data_temp.query(conditions)
+X = np.zeros(len(data_test))
+X[list(data_temp["ID"])] = 1
+
+Y = data_test.loc[:, data_test.columns == 'loan_status'].to_numpy()[:,0]
+
+print("Wrong answers of the decission tree: ",np.sum(np.abs(Y-X))/len(Y) * 100, "%")
+confusion_matrix(Y,X)
+
+
+
+
+
+
+
