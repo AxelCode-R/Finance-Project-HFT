@@ -34,32 +34,32 @@ def calc_splitted_entropy(df, col, val, decision_on = "loan_status"):
   result = w * calc_entropy(df.loc[df[col] > val], decision_on) + (1-w) * calc_entropy(df.loc[df[col] <= val], decision_on)
   return result
 
-def find_minima(df, col, decision_on = "loan_status", round_at = 5):
-  direction = 1
-  step = (df[col].max()-df[col].min()) * 0.1
-  val = df[col].min() + step
-  best_entropy = 1
-  stagnation = 0
-  
-  while stagnation <= 100:
-    print(val)
-    temp = calc_splitted_entropy(df, col, val)
-    print(temp)
-    if temp > best_entropy:
-      print(1)
-      direction = -direction
-      step = 0.5 * step
-      stagnation += 1
-    elif round(temp,round_at) < round(best_entropy,round_at):
-      print(2)
-      stagnation = 0
-    else:
-      print(3)
-      stagnation += 1
-    best_entropy = temp
-    val = val + direction * step
-    
-  return best_entropy, val
+# def find_minima(df, col, decision_on = "loan_status", round_at = 5):
+#   direction = 1
+#   step = (df[col].max()-df[col].min()) * 0.1
+#   val = df[col].min() + step
+#   best_entropy = 1
+#   stagnation = 0
+#   
+#   while stagnation <= 100:
+#     print(val)
+#     temp = calc_splitted_entropy(df, col, val)
+#     print(temp)
+#     if temp > best_entropy:
+#       print(1)
+#       direction = -direction
+#       step = 0.5 * step
+#       stagnation += 1
+#     elif round(temp,round_at) < round(best_entropy,round_at):
+#       print(2)
+#       stagnation = 0
+#     else:
+#       print(3)
+#       stagnation += 1
+#     best_entropy = temp
+#     val = val + direction * step
+#     
+#   return best_entropy, val
 
 
 def find_minima2(df, col, decision_on = "loan_status", search_minima_intervalls = 1000):
@@ -99,7 +99,7 @@ def make_node_and_leafs(df, decision_on = "loan_status", search_minima_intervall
 
 
 
-#data_train["loan_status"] = (data_train["loan_status"]-1) * -1
+
 
 leafs = make_node_and_leafs(df=data_train, decision_on = "loan_status", search_minima_intervalls = 1000, min_size = 1000, max_depth = 3)
 leafs["entropy"] = (leafs["entropy"]*leafs["rows"])/len(data_train)
@@ -122,13 +122,15 @@ print("Wrong answers of the decission tree: ",np.sum(np.abs(Y-X))/len(Y) * 100, 
 confusion_matrix(Y,X)
 
 
-#View(py$leafs)
 
 
 
 
 
 # Analyse Test Data
+import time
+start_timer = time.time()
+
 data_temp = data_test.copy()
 data_temp["ID"] = list(range(len(data_temp)))
 conditions = "("+ ") | (".join(list(leafs.loc[leafs["P_of_no_default"] < 0.75, leafs.columns == "condition"]["condition"].replace("and","&")))+")"
@@ -141,9 +143,11 @@ Y = data_test.loc[:, data_test.columns == 'loan_status'].to_numpy()[:,0]
 print("Wrong answers of the decission tree: ",np.sum(np.abs(Y-X))/len(Y) * 100, "%")
 confusion_matrix(Y,X)
 
+time_used = time.time() - start_timer
+print(time_used)
 
 
 
 
-
+#View(py$leafs)
 
